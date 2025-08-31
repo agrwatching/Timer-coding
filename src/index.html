@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sitetime</title>
+  <style>
+    body {
+      margin: 0;
+      background: rgba(0,0,0,0.4);
+      font-family: sans-serif;
+    }
+
+    h1 {
+      color: white;
+      margin-top: 0px;
+      font-size: 120px;
+      opacity: 0.5;
+      text-align: center;
+    }
+
+    .color-stop { 
+      color: white;
+      text-align: center;
+    }
+
+    .overlay, .overlay-timer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 70vh;
+    }
+
+    .overlay-timer {
+      height: 100vh;
+    }
+
+    .hidden { display: none; }
+
+    .btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.2);
+      margin: 1px;
+      color: white;
+    }
+
+    .close-btn, .stop-btn {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+    }
+
+    .stop-btn { right: 50px; }
+
+    input {
+      width: 300px;
+      height: 60px;
+      font-size: 24px;
+      text-align: center;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.4);
+      color: white;
+      outline: none;
+      margin-top: 20px;
+      transition: all 0.2s ease-in-out;
+      opacity: 0.5;
+    }
+
+    input:focus {
+      border-color: rgba(255,255,255,0.8);
+      background: rgba(0,0,0,0.6);
+    }
+
+    /* 🔹 Hilangkan spinner number */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Persegi panjang border radius */
+    .liner1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 8px solid rgba(255,255,255,0.1);
+      border-radius: 30px; /* sudut membulat */
+      padding: 25px;
+      margin: 15px;
+    }
+
+    .timer {
+      font-size: 200px;
+      color: white;
+      opacity: 0.2;
+    }
+  </style>
+</head>
+<body>
+  <div class="btn close-btn interactive" onclick="electronAPI.closeApp()">❌</div>
+  <div class="btn stop-btn interactive hidden color-stop" onclick="stopTimer()">⏹</div>
+
+  <div class="overlay" id="idle-state">
+    <h1>SET TIME</h1>
+    <input class="interactive" id="minutes" type="number" placeholder="Minutes" min="1" />
+  </div>
+
+  <div class="overlay-timer hidden" id="running-state">
+    <div class="liner1">
+      <div class="liner1">
+        <div class="timer" id="countdown">00:00:00:00</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let countdownInterval;
+  let targetTime = 0;
+
+  document.querySelectorAll(".interactive").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+      window.electronAPI.setIgnoreMouseEvents(false);
+    });
+    el.addEventListener("mouseleave", () => {
+      window.electronAPI.setIgnoreMouseEvents(true);
+    });
+  });
+
+  const minutesInput = document.getElementById("minutes");
+  minutesInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") startTimer();
+  });
+
+  minutesInput.addEventListener("input", () => {
+    minutesInput.value = minutesInput.value.replace(/[^0-9]/g, "");
+  });
+
+  function startTimer() {
+    const minutes = parseInt(minutesInput.value);
+    if (!minutes || minutes <= 0) return;
+
+    targetTime = Date.now() + minutes * 60 * 1000;
+
+    document.getElementById("idle-state").classList.add("hidden");
+    document.getElementById("running-state").classList.remove("hidden");
+    document.querySelector(".stop-btn").classList.remove("hidden");
+
+    updateCountdown(targetTime - Date.now());
+    countdownInterval = setInterval(() => {
+      const remaining = targetTime - Date.now();
+      if (remaining <= 0) {
+        stopTimer();
+        updateCountdown(0);
+      } else {
+        updateCountdown(remaining);
+      }
+    }, 50);
+  }
+
+  function stopTimer() {
+    clearInterval(countdownInterval);
+    document.getElementById("running-state").classList.add("hidden");
+    document.getElementById("idle-state").classList.remove("hidden");
+    document.querySelector(".stop-btn").classList.add("hidden");
+  }
+
+  function updateCountdown(ms) {
+    const hrs  = Math.floor(ms / 3600000);
+    const mins = Math.floor((ms % 3600000) / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+    const cs   = Math.floor((ms % 1000) / 10);
+
+    document.getElementById("countdown").innerText =
+      `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}:${String(cs).padStart(2,'0')}`;
+  }
+</script>
+</body>
+</html>

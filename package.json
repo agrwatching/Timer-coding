@@ -1,0 +1,47 @@
+{
+  "name": "timer",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "Sitetime Timer",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.sitetime.timer",
+    "productName": "Sitetime",
+    "asar": true,
+    "compression": "maximum",
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/.bin",
+      "!**/*.map",
+      "!**/*.ts",
+      "!**/*.git*",
+      "!**/docs",
+      "!**/test",
+      "!**/tests",
+      "!**/example",
+      "!**/examples"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Sitetime"
+    }
+  }
+}
